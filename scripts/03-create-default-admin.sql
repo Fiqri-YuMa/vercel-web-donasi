@@ -18,17 +18,17 @@ WHERE email = 'admin@pmicianjur.org';
 -- You would need to insert into auth.users first, but this is handled by Supabase Auth
 
 -- For development/testing, you can create a test admin:
--- Email: admin@test.com
--- Password: admin123 (set during signup)
+Email: admin@test.com
+Password: admin123 (set during signup)
 
 -- Then update the role:
--- UPDATE public.profiles 
--- SET role = 'admin', full_name = 'Test Admin'
--- WHERE email = 'admin@test.com';
+UPDATE public.profiles 
+SET role = 'admin', full_name = 'Test Admin'
+WHERE email = 'admin@test.com';
 
 -- Create test coordinator for development
--- Email: koor@test.com  
--- Password: koor123 (set during signup)
--- UPDATE public.profiles 
--- SET role = 'koor', full_name = 'Test Koordinator'
--- WHERE email = 'koor@test.com';
+Email: koor@test.com  
+Password: koor123 (set during signup)
+UPDATE public.profiles 
+SET role = 'koor', full_name = 'Test Koordinator'
+WHERE email = 'koor@test.com';
