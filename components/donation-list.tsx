@@ -2,6 +2,7 @@
 
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { formatCurrency } from "@/lib/utils"
 
 interface Donation {
   id: string
@@ -10,27 +11,24 @@ interface Donation {
   donor_email: string
   donor_phone: string
   amount?: number
-  goods_description?: string
-  goods_quantity?: number
-  goods_unit?: string
-  notes?: string
+  item_name?: string
+  quantity?: number
+  unit?: string
+  description?: string
   status: string
+  photo_url?: string
   created_at: string
+  categories?: {
+    name: string
+  }
 }
 
 interface DonationListProps {
   donations: Donation[]
+  showAll?: boolean
 }
 
-export function DonationList({ donations }: DonationListProps) {
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      minimumFractionDigits: 0,
-    }).format(amount)
-  }
-
+export function DonationList({ donations, showAll = false }: DonationListProps) {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("id-ID", {
       year: "numeric",
@@ -43,9 +41,8 @@ export function DonationList({ donations }: DonationListProps) {
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      pending: { label: "Menunggu", variant: "secondary" as const },
-      approved: { label: "Disetujui", variant: "default" as const },
-      received: { label: "Diterima", variant: "default" as const },
+      pending: { label: "Menunggu Verifikasi", variant: "secondary" as const },
+      approved: { label: "Terverifikasi", variant: "default" as const },
       rejected: { label: "Ditolak", variant: "destructive" as const },
     }
 
@@ -53,21 +50,28 @@ export function DonationList({ donations }: DonationListProps) {
     return <Badge variant={config.variant}>{config.label}</Badge>
   }
 
-  if (donations.length === 0) {
+  const filteredDonations = showAll ? donations : donations.filter((d) => d.status === "approved")
+
+  if (filteredDonations.length === 0) {
     return (
       <div className="text-center py-8">
-        <p className="text-muted-foreground">Belum ada donasi yang tercatat.</p>
+        <p className="text-muted-foreground">
+          {showAll ? "Belum ada donasi yang tercatat." : "Belum ada donasi yang terverifikasi."}
+        </p>
       </div>
     )
   }
 
   return (
     <div className="space-y-4">
-      {donations.map((donation) => (
+      {filteredDonations.map((donation) => (
         <Card key={donation.id} className="border-l-4 border-l-primary">
           <CardHeader className="pb-3">
             <div className="flex justify-between items-start">
-              <CardTitle className="text-lg">{donation.donor_name}</CardTitle>
+              <div>
+                <CardTitle className="text-lg">{donation.donor_name}</CardTitle>
+                {donation.categories && <p className="text-sm text-muted-foreground">{donation.categories.name}</p>}
+              </div>
               {getStatusBadge(donation.status)}
             </div>
             <p className="text-sm text-muted-foreground">{formatDate(donation.created_at)}</p>
@@ -76,26 +80,28 @@ export function DonationList({ donations }: DonationListProps) {
             <div className="grid gap-2">
               <div className="flex justify-between">
                 <span className="text-sm font-medium">Jenis:</span>
-                <Badge variant="outline">{donation.donation_type === "money" ? "Uang" : "Barang"}</Badge>
+                <Badge variant="outline" className="capitalize">
+                  {donation.donation_type}
+                </Badge>
               </div>
 
-              {donation.donation_type === "money" && donation.amount && (
+              {donation.donation_type === "uang" && donation.amount && (
                 <div className="flex justify-between">
                   <span className="text-sm font-medium">Jumlah:</span>
                   <span className="text-sm font-bold text-primary">{formatCurrency(donation.amount)}</span>
                 </div>
               )}
 
-              {donation.donation_type === "goods" && (
+              {donation.donation_type === "barang" && (
                 <>
                   <div className="flex justify-between">
                     <span className="text-sm font-medium">Barang:</span>
-                    <span className="text-sm text-right max-w-xs">{donation.goods_description}</span>
+                    <span className="text-sm text-right max-w-xs">{donation.item_name}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm font-medium">Jumlah:</span>
                     <span className="text-sm">
-                      {donation.goods_quantity} {donation.goods_unit}
+                      {donation.quantity} {donation.unit}
                     </span>
                   </div>
                 </>
@@ -109,10 +115,23 @@ export function DonationList({ donations }: DonationListProps) {
                 </div>
               </div>
 
-              {donation.notes && (
+              {donation.description && (
                 <div className="pt-2 border-t">
-                  <span className="text-sm font-medium">Catatan:</span>
-                  <p className="text-sm text-muted-foreground mt-1">{donation.notes}</p>
+                  <span className="text-sm font-medium">Deskripsi:</span>
+                  <p className="text-sm text-muted-foreground mt-1">{donation.description}</p>
+                </div>
+              )}
+
+              {donation.photo_url && donation.status === "approved" && (
+                <div className="pt-2 border-t">
+                  <span className="text-sm font-medium">Bukti Verifikasi:</span>
+                  <div className="mt-2">
+                    <img
+                      src={donation.photo_url || "/placeholder.svg"}
+                      alt="Bukti donasi"
+                      className="w-full max-w-xs rounded-lg border"
+                    />
+                  </div>
                 </div>
               )}
             </div>
