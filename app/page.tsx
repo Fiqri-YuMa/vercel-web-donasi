@@ -1,12 +1,12 @@
-import { createClient } from "@/lib/supabase/server"
+import { createServiceClient } from "@/lib/supabase/service"
 import { DonationForm } from "@/components/donation-form"
 import { DonationList } from "@/components/donation-list"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default async function HomePage() {
-  const supabase = await createClient()
+  const supabase = createServiceClient()
 
-  // Fetch existing donations
+  // Fetch existing donations using service client to bypass RLS
   const { data: donations, error } = await supabase
     .from("donations")
     .select("*")
